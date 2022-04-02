@@ -132,10 +132,9 @@ int main(int argc, char *argv[]) {
     pthread_t threads[numThreads];
     int thread_args[numThreads];
     int i=0;
-    int checkError;
+    bool checkError;
 
-    //create all threads one by one
-    for (pthread_t &thread: threads) {
+    for (pthread_t &thread: threads) { //create threads
         cout<<"Thread main: Creating thread: " << i <<endl;
         thread_args[i] = i;
         checkError = pthread_create(&thread, NULL, doWork, &thread_args[i]);
@@ -147,8 +146,7 @@ int main(int argc, char *argv[]) {
 
     i=0;
 
-    //wait for each thread to complete
-    for (pthread_t &thread: threads) {
+    for (pthread_t &thread: threads) {//end threads
         checkError = pthread_join(thread, NULL);
         assert(!checkError);
         cout<<"Thread main: Thread ended:  " << i <<endl;
