@@ -7,10 +7,9 @@
 #include <algorithm>
 
 using namespace std;
-// compilation command: g++ -g -Wall main.cpp -o exe -pthread
-// execute: ./exe [number of desired threads]
+// compilation: g++ -g -Wall main.cpp -o app -pthread
+// execute: ./app [numThreads]
 
-int numThreads;
 
 void bubbleSort(int threadNumber) {
     int size = 100;
@@ -63,14 +62,14 @@ void selectionSort(int threadNumber) {
     }
     cout<<"Thread: "<<threadNumber<< " Started sorting: " << endl;
 
-    for (int i = 0; i < table.size(); i++) {
+    for (int i = 0; i < size; i++) {
 
         if (i % (10) == 0) {
             cout <<"Thread: "<<threadNumber <<" "<< i << " % passed" << endl;
         }
 
         int min = i;
-        for (int j = i + 1; j < table.size(); j++) {
+        for (int j = i + 1; j < size; j++) {
             if (table[j] < table[min]) {
                 min = j;
             }
@@ -108,9 +107,9 @@ void drawSlope(int threadNumber) {
     cout <<"Thread: "<<threadNumber<< " Drawing finished" << endl;
 }
 
-void *perform_work(void *arguments) {
+void *doWork(void *threadNumber) {
     int action = rand() % 4;
-    int thread = *(int *) arguments;
+    int thread = *(int *) threadNumber;
     switch (action) {
         case 0:
             bubbleSort(thread);
@@ -129,29 +128,32 @@ void *perform_work(void *arguments) {
 }
 
 int main(int argc, char *argv[]) {
-    int NUM_THREADS = atoi(argv[1]);
-    pthread_t threads[NUM_THREADS];
-    int thread_args[NUM_THREADS];
-    int i;
-    int result_code;
+    int numThreads = atoi(argv[1]);
+    pthread_t threads[numThreads];
+    int thread_args[numThreads];
+    int i=0;
+    int checkError;
 
     //create all threads one by one
-    for (i = 0; i < NUM_THREADS; i++) {
-        cout<<"IN MAIN: Creating thread " << i << "." << endl;
+    for (pthread_t &thread: threads) {
+        cout<<"Thread main: Creating thread: " << i <<endl;
         thread_args[i] = i;
-        result_code = pthread_create(&threads[i], NULL, perform_work, &thread_args[i]);
-        assert(!result_code);
+        checkError = pthread_create(&thread, NULL, doWork, &thread_args[i]);
+        i++;
+        assert(!checkError);
     }
 
-    cout<<"IN MAIN: All threads are created."<<endl;
+    cout<<"Thread main: Threads created."<<endl;
+
+    i=0;
 
     //wait for each thread to complete
-    for (i = 0; i < NUM_THREADS; i++) {
-        result_code = pthread_join(threads[i], NULL);
-        assert(!result_code);
-        cout<<"IN MAIN: Thread " << i << " has ended."<<endl;
+    for (pthread_t &thread: threads) {
+        checkError = pthread_join(thread, NULL);
+        assert(!checkError);
+        cout<<"Thread main: Thread ended:  " << i <<endl;
+        i++;
     }
 
-    cout<<"MAIN program has ended."<<endl;
-    return 0;
+    cout<<"Thread main: Work done."<<endl;
 }
